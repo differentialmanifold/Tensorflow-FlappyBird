@@ -28,7 +28,7 @@ INITIAL_EPSILON = 0.1  # starting value of epsilon
 REPLAY_MEMORY = 50000  # number of previous transitions to remember
 BATCH = 32  # size of minibatch
 FRAME_PER_ACTION = 1
-LEARNING_RATE = 1e-3
+LEARNING_RATE = 1e-4
 
 img_rows, img_cols = 80, 80
 # Convert image into Black and white
@@ -69,6 +69,7 @@ def trainNetwork(model, args):
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
         model.restore(sess)
+        # sess.run(model.update_ops)
 
         if args['mode'] == 'Run':
             OBSERVE = 999999999  # We keep observe, never train
@@ -87,7 +88,7 @@ def trainNetwork(model, args):
             # choose an action epsilon greedy
             if t % FRAME_PER_ACTION == 0:
                 if random.random() <= epsilon:
-                    print("----------Random Action----------")
+                    # print("----------Random Action----------")
                     action_index = random.randrange(ACTIONS)
                     a_t[action_index] = 1
                 else:
@@ -132,13 +133,13 @@ def trainNetwork(model, args):
 
                 loss += model.update(sess, state_t, targets)
 
+                # save progress every 10000 iterations
+                if t % 1000 == 0:
+                    print("Now we save model")
+                    model.save(sess)
+
             s_t = s_t1
             t = t + 1
-
-            # save progress every 10000 iterations
-            if t % 1000 == 0:
-                print("Now we save model")
-                model.save(sess)
 
             # print info
             state = ""
@@ -149,9 +150,10 @@ def trainNetwork(model, args):
             else:
                 state = "train"
 
-            print("TIMESTEP", t, "/ STATE", state, \
-                  "/ EPSILON", epsilon, "/ ACTION", action_index, "/ REWARD", r_t, \
-                  "/ Q_MAX ", np.max(Q_sa), "/ Loss ", loss)
+            if t % 100 == 0:
+                print("TIMESTEP", t, "/ STATE", state, \
+                      "/ EPSILON", epsilon, "/ ACTION", action_index, "/ REWARD", r_t, \
+                      "/ Q_MAX ", np.max(Q_sa), "/ Loss ", loss)
 
         model.train_writer.close()
         model.validation_writer.close()
