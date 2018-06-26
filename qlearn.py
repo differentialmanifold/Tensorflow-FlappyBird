@@ -70,7 +70,6 @@ def trainNetwork(model, args):
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
         model.restore(sess)
-        # sess.run(model.update_ops)
 
         if args['mode'] == 'Run':
             OBSERVE = 999999999  # We keep observe, never train
@@ -166,8 +165,6 @@ def trainNetwork(model, args):
                 if terminal:
                     break
 
-            print('episode finished : episode_length is: {}  episode_reward is: {}'.format(episode_length,
-                                                                                           episode_reward))
             # Add summaries to tensorboard
             episode_summary = tf.Summary()
             episode_summary.value.add(simple_value=episode_reward, node_name="episode_reward",
